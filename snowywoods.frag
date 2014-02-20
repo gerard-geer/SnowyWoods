@@ -175,41 +175,6 @@ float distCylinderBump( vec3 pos, vec3 properties, sampler2D image, float scale)
 }
 
 /*
-	Returns the distance to the nearest snow feature, whether it's the ground, the
-	tree collection, or the windswept bits.
-*/
-float distSnow(vec3 pos)
-{
-	return min(smin(distPlaneBump(pos, GROUND_NORMAL, GROUND_HEIGHT, SNOW_BUMP, SNOW_TEX_SCALE), 
-					   distCapsule(pos, SNOW_BOTTOM, SNOW_TOP, SNOW_RAD, SNOW_BUMP, SNOW_TEX_SCALE), SMIN_FACTOR), 
-			distCylinderBump(pos, TREE_SNOW_PROP, TREE_SNOW_BUMP, SNOW_TEX_SCALE));
-}
-
-/*
-	Returns the distance to the nearest tree.
-*/
-float distTree(vec3 pos)
-{
-	distCylinderBump(pos, TREE_PROP, TREE_BUMP, TREE_TEX_SCALE);
-}
-
-/*
-	Returns the base normal of a repeated cylinder.
-*/
-vec3 getCylinderNormal(vec3 pos, vec3 properties)
-{
-	// Perform modulation to keep in line with our cylinder distance function.
-	pos.xz = mod(pos.xz,TREE_REP.xz);
-	pos.xz -= vec2(TREE_REP.xz*.5);
-	
-	// Since we can assume that the cylinder is vertical,
-	// the only coordinates that matter are x and z.
-	// This speeds up normal generation quite a bit.
-	vec2 normal = normalize(pos.xz-properties.xy);
-	return vec3(normal.x, 0.0, normal.y);
-}
-
-/*
 	Returns the distance to a repeated capsule shape.
 */
 float distCapsule(vec3 pos, vec3 a, vec3 b, float r, sampler2D image, float scale)
@@ -231,6 +196,41 @@ float distCapsule(vec3 pos, vec3 a, vec3 b, float r, sampler2D image, float scal
 		bump = tex3D(pos*scale, vec3(normal.x, 0.0, normal.y), image).r*FEATURE_BUMP_FACTOR*.5;
 	}
 	return dist + bump;
+}
+
+/*
+	Returns the distance to the nearest snow feature, whether it's the ground, the
+	tree collection, or the windswept bits.
+*/
+float distSnow(vec3 pos)
+{
+	return min(smin(distPlaneBump(pos, GROUND_NORMAL, GROUND_HEIGHT, SNOW_BUMP, SNOW_TEX_SCALE), 
+					   distCapsule(pos, SNOW_BOTTOM, SNOW_TOP, SNOW_RAD, SNOW_BUMP, SNOW_TEX_SCALE), SMIN_FACTOR), 
+			distCylinderBump(pos, TREE_SNOW_PROP, TREE_SNOW_BUMP, SNOW_TEX_SCALE));
+}
+
+/*
+	Returns the distance to the nearest tree.
+*/
+float distTree(vec3 pos)
+{
+	return distCylinderBump(pos, TREE_PROP, TREE_BUMP, TREE_TEX_SCALE);
+}
+
+/*
+	Returns the base normal of a repeated cylinder.
+*/
+vec3 getCylinderNormal(vec3 pos, vec3 properties)
+{
+	// Perform modulation to keep in line with our cylinder distance function.
+	pos.xz = mod(pos.xz,TREE_REP.xz);
+	pos.xz -= vec2(TREE_REP.xz*.5);
+	
+	// Since we can assume that the cylinder is vertical,
+	// the only coordinates that matter are x and z.
+	// This speeds up normal generation quite a bit.
+	vec2 normal = normalize(pos.xz-properties.xy);
+	return vec3(normal.x, 0.0, normal.y);
 }
 
 /*
