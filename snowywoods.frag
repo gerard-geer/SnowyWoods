@@ -33,9 +33,9 @@
 #define TREE_SNOW_TEX_SCALE .45
 
 #define LIGHT_SPREAD .2
-#define LIGHT_COLOR vec4(1.0, 1.0, .95, 1.0)
+#define LIGHT_COLOR vec3(1.0, 1.0, .95)
 #define LIGHT_BRIGHT 0.667
-#define AMBIENT_COLOR vec4(.6, .6, 1.0, 1.0)
+#define AMBIENT_COLOR vec3(.6, .6, 1.0)
 #define AMBIENT_LIGHT .0125
 #define PEN_FACTOR 20.0
 
@@ -57,7 +57,7 @@ struct SpotLight
 */
 struct Material
 {
-	vec4 color;
+	vec3 color;
 	float gloss;
 };
 
@@ -95,12 +95,13 @@ void camPolar( out vec3 pos, out vec3 dir, in vec3 origin, in vec2 rotation, in 
 /*
 	By Reinder. Takes a 3D coordinate, and returns a texel based on which plane(s)
 	it lies in.
+	
 */
-vec4 tex3D( in vec3 pos, in vec3 normal, sampler2D sampler )
+vec3 tex3D( in vec3 pos, in vec3 normal, sampler2D sampler )
 {
-	return 	texture2D( sampler, pos.yz )*abs(normal.x)+ 
-			texture2D( sampler, pos.zx )*abs(normal.y)+ 
-			texture2D( sampler, pos.xy )*abs(normal.z);
+	return 	texture2D( sampler, pos.yz )*abs(normal.x).rgb+ 
+			texture2D( sampler, pos.zx )*abs(normal.y).rgb+ 
+			texture2D( sampler, pos.xy )*abs(normal.z).rgb;
 }
 
 //==ASSORTED MATH STUFFS============================================================
@@ -246,15 +247,15 @@ float getDist(vec3 samplePos)
 /*
 	Returns the color of the nearest object in the scene.
 */
-vec4 getColor(vec3 samplePos)
+vec3 getColor(vec3 samplePos)
 {
 	// If we are closer to snow, return the color of the snow.
 	if(distSnow(samplePos) < distTree(samplePos))
 	{
-		return vec4(1.0);
+		return vec3(1.0);
 	}
 	// Otherwise return our "wood" texture.
-	else return tex3D(samplePos*4.0, getCylinderNormal(samplePos, TREE_PROP), iChannel0)*vec4(.75, .75, .85, 1.0);
+	else return tex3D(samplePos*4.0, getCylinderNormal(samplePos, TREE_PROP), iChannel0)*vec4(.75, .75, .85);
 }
 
 //==RAY MARCHING FUNCTIONS=========================================================
@@ -352,7 +353,7 @@ float calcShadow( vec3 origin, vec3 lightDir, SpotLight light)
 	Returns the product of the Phong lighting equation on a point in space given
 	a (SPOT) light and the surface's material.
 */
-vec4 calcLighting(vec3 samplePos, vec3 eye, SpotLight light, Material material)
+vec3 calcLighting(vec3 samplePos, vec3 eye, SpotLight light, Material material)
 {
 	float lightDist = length(light.position-samplePos);
 	vec3 lightDir = normalize(light.position-samplePos);
@@ -382,16 +383,16 @@ vec4 calcLighting(vec3 samplePos, vec3 eye, SpotLight light, Material material)
 		shadow = calcShadow(samplePos, lightDir, light);
 	}
 	occlusion = calcOcclusion(samplePos, surfaceNormal);
-	vec4 objectColor = getColor(samplePos);
+	vec3 objectColor = getColor(samplePos);
 	return light.color*objectColor*clamp(((specular+diffuse)*shadow*attenuation), 0.0, 1.0)+(ambient*occlusion*AMBIENT_COLOR*objectColor);
 }
 
 /*
 	Shade a point after it has been marched and found.
 */
-vec4 shade(vec3 pos, vec3 eye, SpotLight light, Material material)
+vec3 shade(vec3 pos, vec3 eye, SpotLight light, Material material)
 {
-	vec4 fog = textureCube(iChannel3, normalize(eye-pos))*AMBIENT_COLOR;
+	vec3 fog = textureCube(iChannel3, normalize(eye-pos)).rgb*AMBIENT_COLOR;
 	float dist = length(eye-pos);
 	if(dist > MAX_DEPTH)
 	{
@@ -399,7 +400,7 @@ vec4 shade(vec3 pos, vec3 eye, SpotLight light, Material material)
 	}
 	else
 	{
-		vec4 litTexel =  calcLighting(pos, eye, light, material);
+		vec3 litTexel = calcLighting(pos, eye, light, material);
 		return addFog(dist, litTexel, fog);
 	}
 }
