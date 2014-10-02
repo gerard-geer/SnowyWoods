@@ -46,7 +46,7 @@
 struct SpotLight
 {
 	vec3 position, direction;
-	vec4 color;
+	vec3 color;
 	float brightness;
 	float spread;
 	float penumbraFactor;
@@ -93,7 +93,7 @@ void camPolar( out vec3 pos, out vec3 dir, in vec3 origin, in vec2 rotation, in 
 
 //==TEXTURING FUNCTIONS=============================================================
 /*
-	By Reinder. Takes a 3D coordinate, and returns a texel based on which plane(s)
+	Takes a 3D coordinate, and returns a texel based on which plane(s)
 	it lies in.
 	
 */
@@ -106,7 +106,7 @@ vec3 tex3D( in vec3 pos, in vec3 normal, sampler2D sampler )
 
 //==ASSORTED MATH STUFFS============================================================
 /*
-	Returns a smoothed minumum between two values. (By Inigo Quilez)
+	Returns a smoothed minimum between two values. (By Inigo Quilez)
 */
 float smin( float a, float b, float k )
 { 
@@ -296,7 +296,7 @@ vec3 getNormal(vec3 pos)
 /*
 	Returns the amount of fog in a scene at the given distance.
 */
-vec4 addFog(float dist, vec4 before, vec4 fogColor)
+vec4 addFog(float dist, vec3 before, vec3 fogColor)
 {
 	return mix(before, fogColor, pow((dist/MAX_DEPTH),2.0));
 }
@@ -420,7 +420,7 @@ void main(void)
 						LIGHT_COLOR, 
 						LIGHT_BRIGHT, LIGHT_SPREAD, PEN_FACTOR);
 	
-	Material mat = Material(vec4(1.0), 1.0);					   
+	Material mat = Material(vec3(1.0), 1.0);					   
 	
 	camPolar(pos, dir, camPos, facing, .05, 1.0);
 	eye = vec3(pos);
