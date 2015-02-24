@@ -305,16 +305,16 @@ vec4 addFog(float dist, vec3 before, vec3 fogColor)
 	Calculates the ambient occlusion factor at a given point in space.
 	Written from Inigo Quilez' algorithm.
 */
-float calcOcclusion(vec3 pos, vec3 surfaceNormal)
+float calcOcclusion(vec3 pos, vec3 norm)
 {
-	float result = 0.0;
-	vec3 normalPos = vec3(pos);
-	for(float i = 0.0; i < OCCLUSION_SAMPLES; i+=1.0)
-	{
-		normalPos += surfaceNormal * (1.0/OCCLUSION_SAMPLES);
-		result += (1.0/exp2(i)) * (i/OCCLUSION_SAMPLES)-getDist(normalPos);
-	}
-	return 1.0-(OCCLUSION_FACTOR*result);
+  float result = 1.0;
+  float s = -OCC_SAMPLES;
+  const float unit = 1.0/OCC_SAMPLES;
+  for(float i = unit; i < 1.0; i+=unit)
+  {
+    result -= pow(2.0,i*s)*(i-getDist(pos+i*norm));
+  }
+  return result*OCC_FACTOR;
 }
 
 /*
