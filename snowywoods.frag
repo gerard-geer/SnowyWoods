@@ -99,9 +99,9 @@ void camPolar( out vec3 pos, out vec3 dir, in vec3 origin, in vec2 rotation, in 
 */
 vec3 tex3D( in vec3 pos, in vec3 normal, sampler2D sampler )
 {
-	return 	texture2D( sampler, pos.yz )*abs(normal.x).rgb+ 
-			texture2D( sampler, pos.zx )*abs(normal.y).rgb+ 
-			texture2D( sampler, pos.xy )*abs(normal.z).rgb;
+	return 	texture2D( sampler, pos.yz ).rgb*abs(normal.x)+ 
+			texture2D( sampler, pos.zx ).rgb*abs(normal.y)+ 
+			texture2D( sampler, pos.xy ).rgb*abs(normal.z);
 }
 
 //==ASSORTED MATH STUFFS============================================================
@@ -255,7 +255,7 @@ vec3 getColor(vec3 samplePos)
 		return vec3(1.0);
 	}
 	// Otherwise return our "wood" texture.
-	else return tex3D(samplePos*4.0, getCylinderNormal(samplePos, TREE_PROP), iChannel0)*vec4(.75, .75, .85);
+	else return tex3D(samplePos*4.0, getCylinderNormal(samplePos, TREE_PROP), iChannel0)*vec3(.75, .75, .85);
 }
 
 //==RAY MARCHING FUNCTIONS=========================================================
@@ -296,7 +296,7 @@ vec3 getNormal(vec3 pos)
 /*
 	Returns the amount of fog in a scene at the given distance.
 */
-vec4 addFog(float dist, vec3 before, vec3 fogColor)
+vec3 addFog(float dist, vec3 before, vec3 fogColor)
 {
 	return mix(before, fogColor, pow((dist/MAX_DEPTH),2.0));
 }
@@ -427,5 +427,5 @@ void main(void)
 	
 	marchThroughField(pos, dir);
 	
-	gl_FragColor = shade(pos, eye, light, mat);
+	gl_FragColor = pow(vec4(shade(pos, eye, light, mat), 1.0), vec4(1.0/2.2));
 }
