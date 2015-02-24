@@ -308,13 +308,13 @@ vec4 addFog(float dist, vec3 before, vec3 fogColor)
 float calcOcclusion(vec3 pos, vec3 norm)
 {
   float result = 1.0;
-  float s = -OCC_SAMPLES;
-  const float unit = 1.0/OCC_SAMPLES;
+  float s = -OCCLUSION_SAMPLES;
+  const float unit = 1.0/OCCLUSION_SAMPLES;
   for(float i = unit; i < 1.0; i+=unit)
   {
     result -= pow(2.0,i*s)*(i-getDist(pos+i*norm));
   }
-  return result*OCC_FACTOR;
+  return result*OCCLUSION_FACTOR;
 }
 
 /*
